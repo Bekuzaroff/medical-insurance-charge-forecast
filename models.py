@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
 
@@ -21,6 +21,15 @@ transformer = Transformer()
 
 train_prepared = transformer.fit_transform(train_set)
 test_prepared = transformer.fit_transform(test_set)
+
+
+
+def make_gr_search(model_obj, model_name, params):
+    gr_s = GridSearchCV(model_obj, params, scoring="neg_mean_squared_error")
+    gr_s.fit(train_prepared, train_y)
+    print("best_params: ", gr_s.best_params_)
+    print("best_score: ", gr_s.best_score_)
+    print("best model: ", model_name)
 
 def compare_models(models: dict, metric: str = "test_rmse"):
     results = []
@@ -60,11 +69,19 @@ def compare_models(models: dict, metric: str = "test_rmse"):
 models = {"Linear Regression": LinearRegression(), 
           "SVR": SVR(),
           "Desicion tree": DecisionTreeRegressor(),
-          "Random forest": RandomForestRegressor(max_depth=50, max_features="sqrt")}
+          "Random forest": RandomForestRegressor(max_depth=5, max_features="log2")}
 model_df = compare_models(models)
 print(model_df)
+
+# grid search
 best_model = model_df.iloc[0]
-print("best model: ", best_model["model"])
+params = {
+    "max_features": ["sqrt", "log2"],
+    "max_depth": [5, 6, 50]
+}
+# make_gr_search(best_model["model_object"], best_model["model"], params)
+
+
 
 joblib.dump(best_model["model_object"], "best_model.joblib")
 print("model saved")
