@@ -53,7 +53,7 @@ def main():
         corr_m = train_transformed.corr()
         print("\nКорреляция с charges (топ-10):")
         charges_corr = corr_m['charges'].sort_values(ascending=False)
-        print(charges_corr.head(10))
+        print(charges_corr)
         
         # Визуализация
         print("\nСоздаем графики...")

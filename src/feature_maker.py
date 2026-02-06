@@ -23,17 +23,18 @@ class FeatureMaker():
         
         # BMI категории
         df["normal_bmi"] = ((df["bmi"] > 25) & (df["bmi"] < 35)).astype(int)
-        df["is_north"] = ((df["region"] == "northwest").astype(int) + (df["region"] == "northeast").astype(int))
+       
         # Факторы риска
         df["risk_factor"] = (df["is_smoker"] * 7) + \
-                           ((df["bmi"] > 34).astype(int) * 1) + \
-                           ((df["age"] > 50).astype(int) * 2) + df["is_north"] * 0.1
+                           ((df["bmi"] > 30).astype(int) * 1) + \
+                           ((df["age"] > 55).astype(int) * 2)
         
-        df["imp"] = (df["risk_factor"] * 7)
+        df["many_children"] = (df["risk_factor"] / (df["children"]  +  1) * 6)
+        
         
         # Группы риска
-        df["in_risk_group"] = df[["age_smoker", "age_bmi", "bmi_smoker"]].sum(axis=1) + \
-                             df["is_female"] * 10
+        df["in_risk_group"] = df[["age_smoker", "age_bmi", "bmi_smoker"]].sum(axis=1)
+                             
         
         # Полиномиальные признаки
         if self.poly_features:

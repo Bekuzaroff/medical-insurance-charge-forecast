@@ -21,8 +21,9 @@ class Transformer():
     def transform(self, X: pd.DataFrame):
         df = X.copy()
         
-        num_attrs = ["age", "bmi", "children", "is_smoker", "is_female", 
-                     "age_smoker", "bmi_smoker", "age_bmi", "normal_bmi", "risk_factor", "in_risk_group", "imp", "is_north"]
+        num_attrs = ["age", "bmi",   
+                     "age_smoker", "bmi_smoker", "age_bmi",  "risk_factor", 
+                     "in_risk_group", "many_children"]
         cat_attrs = ["sex", "smoker", "region"]
 
         num_trans = Pipeline([
@@ -49,6 +50,12 @@ class Transformer():
         all_attrs.extend(cat_attrs)
 
         df[all_attrs] = main_pipeline.fit_transform(df)
+
+        df = df.drop("sex", axis=1)
+        df = df.drop("region", axis=1)
+        df = df.drop("bmi", axis=1)
+        df = df.drop("bmi_smoker", axis=1)
+        df = df.drop("children", axis=1)
         
         return df
     
