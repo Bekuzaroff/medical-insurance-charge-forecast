@@ -1,15 +1,20 @@
+import pandas as pd
+import numpy as np
 
 
 class FeatureMaker():
     """Создает новые признаки из данных страхования"""
     
-    def __init__(self, poly_features=False):
-        self.poly_features = poly_features
-    
-    def fit(self):
+    def __init__(self):
+        self.fitted = False
+        
+    def fit(self, X, y=None):
+        """Обучает FeatureMaker (ничего не делает, но нужен для совместимости)"""
+        self.fitted = True
         return self
     
     def transform(self, X):
+        """Применяет создание признаков к данным"""
         df = X.copy()
         
         # Базовые булевы признаки
@@ -17,31 +22,42 @@ class FeatureMaker():
         df["is_female"] = (df["sex"] == "female").astype(int)
         
         # Взаимодействия признаков
-        df["age_smoker"] = 4 * df["age"] + df["is_smoker"] * 5
-        df["bmi_smoker"] = 5 * df["bmi"] + df["is_smoker"] * 7
-        df["age_bmi"] = df["bmi"] * df["age"]
+        df["age_smoker"] = df["age"] * (1 + df["is_smoker"] * 2)
+        df["bmi_smoker"] = df["bmi"] * (1 + df["is_smoker"] * 1.5)
+        df["age_bmi"] = df["bmi"] * df["age"] / 100  # Нормализация
         
         # BMI категории
-        df["normal_bmi"] = ((df["bmi"] > 25) & (df["bmi"] < 35)).astype(int)
+        df["bmi_category"] = 0
+        df.loc[df["bmi"] < 18.5, "bmi_category"] = 1  # Недостаточный вес
+        df.loc[(df["bmi"] >= 18.5) & (df["bmi"] < 25), "bmi_category"] = 2  # Норма
+        df.loc[(df["bmi"] >= 25) & (df["bmi"] < 30), "bmi_category"] = 3  # Избыточный вес
+        df.loc[(df["bmi"] >= 30) & (df["bmi"] < 35), "bmi_category"] = 4  # Ожирение 1 степени
+        df.loc[df["bmi"] >= 35, "bmi_category"] = 5  # Ожирение 2+ степени
        
         # Факторы риска
-        df["risk_factor"] = (df["is_smoker"] * 7) + \
-                           ((df["bmi"] > 30).astype(int) * 1) + \
-                           ((df["age"] > 55).astype(int) * 2)
+        df["risk_factor"] = (df["is_smoker"] * 3) + \
+                           ((df["bmi"] > 30).astype(int) * 2) + \
+                           ((df["age"] > 50).astype(int) * 1)
         
-        df["many_children"] = (df["risk_factor"] / (df["children"]  +  1) * 6)
+        # Количество детей с учетом риска
+        df["many_children"] = df["children"] * (1 + df["risk_factor"] / 10)
         
+        # Группы риска (сумма факторов)
+        risk_features = ["age_smoker", "bmi_smoker", "age_bmi"]
+        df["in_risk_group"] = df[risk_features].sum(axis=1)
         
-        # Группы риска
-        df["in_risk_group"] = df[["age_smoker", "age_bmi", "bmi_smoker"]].sum(axis=1)
-                             
+        # Логарифмические преобразования для асимметричных признаков
+        df["log_bmi"] = np.log1p(df["bmi"] - df["bmi"].min() + 1)
+        df["log_age"] = np.log1p(df["age"])
         
-        # Полиномиальные признаки
-        if self.poly_features:
-            df["age_squared"] = df["age"] ** 2
-            df["bmi_squared"] = df["bmi"] ** 2
+        # Интеракции с регионами
+        region_dummies = pd.get_dummies(df["region"], prefix="region")
+        for region in region_dummies.columns:
+            df[f"smoker_{region}"] = df["is_smoker"] * region_dummies[region]
+            df[f"bmi_{region}"] = df["bmi"] * region_dummies[region]
         
         return df
     
     def fit_transform(self, X, y=None):
-        return self.fit().transform(X)
+        """Обучает и применяет создание признаков"""
+        return self.fit(X, y).transform(X)
