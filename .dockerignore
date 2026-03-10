@@ -1,0 +1,16 @@
+# .dockerignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.coverage
+htmlcov
+.env
+.git
+.github
+.vscode
+.idea
+**/*.ipynb
+**/__pycache__
+**/.ipynb_checkpoints

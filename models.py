@@ -47,6 +47,10 @@ print(f"Топ-5 признаков по корреляции:\n{corr1.head(6)}"
 top_features = corr1.index[1:71]  # пропускаем первый элемент (charges)
 train_prepared = train_prepared[top_features]
 
+# Сохраняем список отобранных признаков
+joblib.dump(top_features.tolist(), 'selected_features.joblib')
+print(f"✅ Список признаков сохранен, всего {len(top_features)} признаков")
+
 # Для тестовых данных используем те же признаки
 test_prepared = test_prepared[top_features]
 
@@ -212,42 +216,6 @@ print(f"Тестовый RMSE: {best_model_info['test_rmse']:.4f}")
 print(f"Тестовый R²: {best_model_info['test_r2']:.4f}")
 print(f"CV RMSE: {best_model_info['cv_rmse']:.4f} (+/- {best_model_info['cv_std']:.4f})")
 print(f"{'!'*50}")
-
-
-# if best_model_info['model'] == "Random Forest":
-#     print("\n" + "="*60)
-#     print("ЗАПУСК GRID SEARCH ДЛЯ RANDOM FOREST")
-#     print("="*60)
-    
-#     params = {
-#         "n_estimators": [100, 200, 300],
-#         "max_depth": [10, 15, 20, None],
-#         "min_samples_split": [2, 5, 10],
-#         "min_samples_leaf": [1, 2, 4],
-#         "max_features": ["sqrt", "log2"]
-#     }
-    
-#     best_rf_model = make_gr_search(
-#         RandomForestRegressor(random_state=42, n_jobs=-1),
-#         "Random Forest",
-#         params,
-#         train_prepared,
-#         train_y
-#     )
-    
-#     # Проверяем улучшенную модель
-#     test_predicts = best_rf_model.predict(test_prepared)
-#     improved_rmse = np.sqrt(mean_squared_error(test_y, test_predicts))
-#     print(f"\nУлучшенный RMSE на тесте: {improved_rmse:.4f}")
-    
-#     if improved_rmse < best_model_info['test_rmse']:
-#         print("Grid Search улучшил модель!")
-#         best_model = best_rf_model
-#     else:
-#         print("Grid Search не улучшил модель, сохраняем оригинал")
-#         best_model = best_model_info["model_object"]
-# else:
-#     best_model = best_model_info["model_object"]
 
 # Сохраняем лучшую модель
 best_model = best_model_info["model_object"]
