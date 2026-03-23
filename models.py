@@ -25,26 +25,24 @@ print(f"Размер тестовой выборки: {test_set.shape}")
 print("\nТрансформация данных...")
 transformer = Transformer()
 
-
 train_prepared = transformer.fit_transform(train_set)
 test_prepared = transformer.transform(test_set)
 
 print(f"Размер после трансформации (train): {train_prepared.shape}")
 print(f"Размер после трансформации (test): {test_prepared.shape}")
-
 # Отбор признаков по корреляции с целевой переменной
 print("\nОтбор признаков по корреляции...")
 
-# Добавляем целевую переменную для расчета корреляции
+# Добавляем целевую переменную
 train_full = train_prepared.copy()
 train_full["charges"] = train_y
 
 # Сортируем признаки по корреляции с charges
 corr1 = train_full.corr()["charges"].sort_values(ascending=False)
-print(f"Топ-5 признаков по корреляции:\n{corr1.head(6)}")  # 6 включает charges
+print(f"Топ-10 признаков по корреляции:\n{corr1.head(11)}")
 
 # Выбираем топ-70 признаков (исключая саму charges)
-top_features = corr1.index[1:71]  # пропускаем первый элемент (charges)
+top_features = corr1.index[1:71]
 train_prepared = train_prepared[top_features]
 
 # Сохраняем список отобранных признаков
@@ -228,14 +226,15 @@ transformer_filename = "transformer.joblib"
 joblib.dump(transformer, transformer_filename)
 print(f"✓ Трансформер сохранен как '{transformer_filename}'")
 
-# Пример использования сохраненной модели
+# ПРИМЕР ИСПОЛЬЗОВАНИЯ СОХРАНЕННОЙ МОДЕЛИ
 print("\n" + "="*60)
 print("ПРИМЕР ИСПОЛЬЗОВАНИЯ СОХРАНЕННОЙ МОДЕЛИ")
 print("="*60)
 
 # Загружаем модель и трансформер
-loaded_model = joblib.load(model_filename)
-loaded_transformer = joblib.load(transformer_filename)
+loaded_model = joblib.load('best_model.joblib')
+loaded_transformer = joblib.load('transformer.joblib')
+loaded_selected_features = joblib.load('selected_features.joblib')
 
 # Берем первые 3 примера из тестовой выборки
 sample_data = test_set.head(3).copy()
@@ -243,7 +242,7 @@ sample_actual = sample_data["charges"].values
 
 # Трансформируем и предсказываем
 sample_prepared = loaded_transformer.transform(sample_data)
-sample_prepared = sample_prepared[top_features]  # Используем те же признаки
+sample_prepared = sample_prepared[loaded_selected_features]
 sample_predictions = loaded_model.predict(sample_prepared)
 
 # Выводим результаты
