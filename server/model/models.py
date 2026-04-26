@@ -3,12 +3,28 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split
 
 from column_transformer import Transformer
 
 
+def make_gr_search(model_obj, model_name, params, X, y):
+        """Выполняет grid search с кросс-валидацией"""
+        print(f"\nЗапуск GridSearchCV для {model_name}...")
+        gr_s = GridSearchCV(
+            model_obj, 
+            params, 
+            scoring="neg_mean_absolute_error",
+            cv=5,
+            n_jobs=-1,
+            verbose=1
+        )
+        gr_s.fit(X, y)
 
+        print(f"Лучшие параметры для {model_name}: {gr_s.best_params_}")
+        print(f"Лучший MAE на кросс-валидации: {-gr_s.best_score_:.4f}")
+        
+        return gr_s.best_estimator_
 
 if __name__ == "__main__":
     # LOAD DATASET, SPLITING FOR TRAIN/TEST
@@ -25,20 +41,23 @@ if __name__ == "__main__":
 
     transformer = Transformer()
 
-    train_set = train_set.drop(["charges", "region"], axis=1)
-    test_set = test_set.drop(["charges", "region"], axis=1)
+    train_set = train_set.drop(["region"], axis=1)
+    test_set = test_set.drop(["region"], axis=1)
 
 
     train_transformed = transformer.fit_transform(train_set)
     test_transformed = transformer.transform(test_set)
 
-
     train_set[transformer.num_features + transformer.cat_features] = train_transformed
     test_set[transformer.num_features + transformer.cat_features] = test_transformed
 
-
     train_set = transformer.feature_engineering(train_set)
     test_set = transformer.feature_engineering(test_set)
+
+    print(train_set.corr()["charges"])
+
+    train_set = train_set.drop(["charges"], axis=1)
+    test_set = test_set.drop(["charges"], axis=1)
 
     joblib.dump(train_set.columns.tolist(), "server/model/model_columns.joblib") # save all columns and columns order
     print(f"Сохранено {len(train_set.columns)} колонок: {train_set.columns.tolist()}")
@@ -48,10 +67,16 @@ if __name__ == "__main__":
     print(f"Размер после трансформации (test): {test_set.shape}")
     # Model training AND FIRST TEST -----------------------------
     model = RandomForestRegressor()
-    model.fit(train_set, train_y)
+    params = {
+        "n_estimators": [100, 150, 200],
+        "min_samples_split": [1, 2, 4],
+        "min_samples_leaf": [1, 2, 4],
+        "max_depth": [1, 5, 10]
+    }
+    model = make_gr_search(model, "random_forest", params, train_set, train_y)
     predicts = model.predict(test_set)
 
-    print(mean_absolute_error(test_y, predicts))
+    print("MAE ON VALIDATION SET: ", mean_absolute_error(test_y, predicts))
 
     print(test_y[:5])
     print(predicts[:5])
@@ -84,24 +109,7 @@ if __name__ == "__main__":
     })
     print(sample_test_df)
 
-    # def make_gr_search(model_obj, model_name, params, X, y):
-    #     """Выполняет grid search с кросс-валидацией"""
-    #     print(f"\nЗапуск GridSearchCV для {model_name}...")
-    #     gr_s = GridSearchCV(
-    #         model_obj, 
-    #         params, 
-    #         scoring="neg_mean_absolute_error",
-    #         cv=5,
-    #         n_jobs=-1,
-    #         verbose=1
-    #     )
-    #     gr_s.fit(X, y)
-        
-    #     best_rmse = np.sqrt(-gr_s.best_score_)
-    #     print(f"Лучшие параметры для {model_name}: {gr_s.best_params_}")
-    #     print(f"Лучший MAE на кросс-валидации: {best_rmse:.4f}")
-        
-    #     return gr_s.best_estimator_
+    
 
 
 

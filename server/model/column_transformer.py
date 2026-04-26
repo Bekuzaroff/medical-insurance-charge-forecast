@@ -79,13 +79,22 @@ class Transformer():
         ]
         age_choices = [1, 5, 10, 15]
         df['age_category'] = np.select(age_conditions, age_choices, default=0)
+
+        children_conditions = [
+            df['children'] == 0,
+            (df['children'] >= 1) & (df['children'] < 3),
+            (df['children'] >= 3) & (df['children'] < 6),
+            df['children'] >= 6
+        ]
+        children_choices = [1, 5, 10, 15]
+        df['children_category'] = np.select(children_conditions, children_choices, default=0)
         
 
 
 
         new_columns = {}
     
-        features_for_interaction = ['bmi_category', 'age_category', 'age', 'bmi', 'children']
+        features_for_interaction = ['children_category', 'bmi_category', 'age_category', 'age', 'bmi', 'children']
         
         for i, f1 in enumerate(features_for_interaction):
             for f2 in features_for_interaction[i+1:]:
