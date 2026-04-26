@@ -109,6 +109,10 @@ if __name__ == "__main__":
     })
     print(sample_test_df)
 
+    # EXERCISES:
+    # WRAP ALL THE FUNCTIONS, MAKE ALL THE CHECKS
+    # PY TEST WRITE
+
     
 
 

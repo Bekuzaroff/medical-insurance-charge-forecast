@@ -6,5 +6,5 @@ pandas
 numpy
 scikit-learn
 setuptools
-xgboost
-lightgbm
+pytest           
+httpx            
