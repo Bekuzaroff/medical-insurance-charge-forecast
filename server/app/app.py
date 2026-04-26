@@ -6,9 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'model'))
+
 model = joblib.load('model/best_model.joblib')
 transformer = joblib.load('model/transformer.joblib')
-model_columns = joblib.load('model/model_columns.joblib') 
+model_columns = joblib.load('model/model_columns.joblib')
 
 class Customer(BaseModel):
     age: int

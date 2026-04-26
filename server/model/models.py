@@ -40,7 +40,7 @@ if __name__ == "__main__":
     train_set = transformer.feature_engineering(train_set)
     test_set = transformer.feature_engineering(test_set)
 
-    joblib.dump(train_set.columns.tolist(), "model/model_columns.joblib") # save all columns and columns order
+    joblib.dump(train_set.columns.tolist(), "server/model/model_columns.joblib") # save all columns and columns order
     print(f"Сохранено {len(train_set.columns)} колонок: {train_set.columns.tolist()}")
 
 
@@ -57,10 +57,10 @@ if __name__ == "__main__":
     print(predicts[:5])
 
     # SAVE MODEL AND TRANSFORMER
-    joblib.dump(model, "model/best_model.joblib")
+    joblib.dump(model, "server/model/best_model.joblib")
     print("модель сохранена")
 
-    transformer_filename = "model/transformer.joblib"
+    transformer_filename = "server/model/transformer.joblib"
     joblib.dump(transformer, transformer_filename)
     print(f"Трансформер сохранен как '{transformer_filename}'")
 
@@ -70,8 +70,8 @@ if __name__ == "__main__":
     print("="*60)
 
     # LOAD MODEL AND DATA TRANSFORMER
-    loaded_model = joblib.load('model/best_model.joblib')
-    loaded_transformer = joblib.load('model/transformer.joblib')
+    loaded_model = joblib.load('server/model/best_model.joblib')
+    loaded_transformer = joblib.load('server/model/transformer.joblib')
 
     # FIRST 3 EXAMPLE FROM TEST SET
     sample_data = test_set.head(3).copy()

@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  backend:
+    image: yourusername/insurance-backend:latest
+    ports:
+      - "8000:8000"
+    restart: always
+
+  frontend:
+    image: yourusername/insurance-frontend:latest
+    ports:
+      - "5173:5173"
+    restart: always

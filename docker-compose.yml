@@ -2,13 +2,11 @@ version: '3.8'
 
 services:
   backend:
-    build: ./
+    build: ./server/
     ports:
       - "8000:8000"
     environment:
       - MODEL_PATH=/app/models
-    volumes:
-      - ./models:/app/models
 
   frontend:
     build: ./client/
