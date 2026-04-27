@@ -6,5 +6,6 @@ pandas
 numpy
 scikit-learn
 setuptools
-pytest           
+pytest   
+pytest-cov        
 httpx            

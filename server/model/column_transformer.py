@@ -1,3 +1,4 @@
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
@@ -107,6 +108,20 @@ class Transformer():
 
         
         return df
+    
+    def save_model(self, model, model_path):
+        joblib.dump(model, model_path)
+        print("модель сохранена")
+
+    def save_transformer(self, transformer, transformer_path):
+
+        if not isinstance(transformer, Transformer):
+            raise TypeError(f"transformer of class {type(transformer)} " 
+                            f"with path {transformer_path}" +
+                            " is not transformer class object")
+        
+        joblib.dump(transformer, transformer_path)
+        print(f"Трансформер сохранен как '{transformer_path}'")
         
         
 
