@@ -31,7 +31,7 @@ app.add_middleware(
 @app.post("/insurance-price")
 def predict(data: Customer):
 
-    input_df = pd.DataFrame([data.model_dump()])
+    input_df = pd.DataFrame([data.dict()])
     
    
     prepared_input = transformer.transform(input_df)

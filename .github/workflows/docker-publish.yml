@@ -1,12 +1,44 @@
-name: Deploy
+name: Docker Publish
 
 on:
   push:
     branches: [main, master]
+  pull_request:
+    branches: [main, master]
 
 jobs:
-  build-and-deploy:
+  test:
+    name: Run Tests
     runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r server/requirements.txt
+      
+      - name: Run unit tests
+        run: |
+          cd server
+          pytest model/test_transformer.py -v --cov=model --cov-report=xml
+      
+      - name: Run API tests
+        run: |
+          cd server
+          pytest app/test_app.py -v --cov=app --cov-report=xml
+
+  build-and-push:
+    name: Build and Push Docker Images
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
       - name: Checkout code
@@ -26,13 +58,15 @@ jobs:
         with:
           context: ./server
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/insurance-backend:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/insurance-backend:latest
+            ${{ secrets.DOCKER_USERNAME }}/insurance-backend:${{ github.sha }}
       
       - name: Build and push Frontend
         uses: docker/build-push-action@v4
         with:
           context: ./client
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/insurance-frontend:latest
-      
-      
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/insurance-frontend:latest
+            ${{ secrets.DOCKER_USERNAME }}/insurance-frontend:${{ github.sha }}

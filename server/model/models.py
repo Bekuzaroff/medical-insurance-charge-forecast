@@ -67,29 +67,27 @@ if __name__ == "__main__":
     print(f"Размер после трансформации (test): {test_set.shape}")
     # Model training AND FIRST TEST -----------------------------
     model = RandomForestRegressor()
-
-    # GRID SEARCH CV ----------------------------
-    # params = {
-    #     "n_estimators": [100, 150, 200],
-    #     "min_samples_split": [1, 2, 4],
-    #     "min_samples_leaf": [1, 2, 4],
-    #     "max_depth": [1, 5, 10]
-    # }
-    # model = make_gr_search(model, "random_forest", params, train_set, train_y)
-    model.fit(train_set, train_y)
+    params = {
+        "n_estimators": [100, 150, 200],
+        "min_samples_split": [1, 2, 4],
+        "min_samples_leaf": [1, 2, 4],
+        "max_depth": [1, 5, 10]
+    }
+    model = make_gr_search(model, "random_forest", params, train_set, train_y)
     predicts = model.predict(test_set)
-    # EVALUTATION -------------------------------------------
+
     print("MAE ON VALIDATION SET: ", mean_absolute_error(test_y, predicts))
 
     print(test_y[:5])
     print(predicts[:5])
 
     # SAVE MODEL AND TRANSFORMER
-    model_path = "server/model/best_model.joblib"
-    transformer.save_model(model, model_path)
+    joblib.dump(model, "server/model/best_model.joblib")
+    print("модель сохранена")
 
-    transformer_path = "server/model/transformer.joblib"
-    transformer.save_transformer("transformer", transformer_path)
+    transformer_filename = "server/model/transformer.joblib"
+    joblib.dump(transformer, transformer_filename)
+    print(f"Трансформер сохранен как '{transformer_filename}'")
 
     # # EVALUTATION AND EXAMPLE OF LOADED MODEL WORK
     print("\n" + "="*60)
@@ -112,6 +110,7 @@ if __name__ == "__main__":
     print(sample_test_df)
 
     # EXERCISES:
+    # WRAP ALL THE FUNCTIONS, MAKE ALL THE CHECKS
     # PY TEST WRITE
 
     
