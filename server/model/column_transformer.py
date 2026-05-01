@@ -89,21 +89,32 @@ class Transformer():
         children_choices = [1, 5, 10, 15]
         df['children_category'] = np.select(children_conditions, children_choices, default=0)
         
+        df['BMI_x_Smoker'] = df['bmi'] * df['smoker']  # убрал сравнение
+        df['Smoker_x_Age'] = df['smoker'] * df['age']  # убрал сравнение
+        df['Smoker_x_BMI_x_Age'] = df['smoker'] * df['bmi'] * df['age']  # убрал сравнение
+        df['BMI_x_Children'] = df['bmi'] * df['children']  # ожирение + дети
+        df['Smoker_x_Age'] = (df['smoker'] == 1) * df['age']  # курящие пожилые
+        df['Smoker_x_BMI_x_Age'] = (df['smoker'] == 1) * df['bmi'] * df['age']  # тройное
 
+        # Квадраты и степени
+        df['age_squared'] = df['age'] ** 2  # риск растет экспоненциально с возрастом
+        df['bmi_squared'] = df['bmi'] ** 2  # ожирение имеет пороговый эффект
+        df['age_cubic'] = df['age'] ** 3  # для捕捉сильных нелинейностей
 
+        # Логарифмы (для признаков с длинным хвостом)
+        df['log_bmi'] = np.log1p(df['bmi'] - 15)  # нормализация ИМТ
+        df['log_age'] = np.log(df['age'] + 1)
 
-        new_columns = {}
-    
-        features_for_interaction = ['children_category', 'bmi_category', 'age_category', 'age', 'bmi', 'children']
-        
-        for i, f1 in enumerate(features_for_interaction):
-            for f2 in features_for_interaction[i+1:]:
-                col_name = f"{f1}_{f2}"  
-                new_columns[col_name] = (df[f1] * df[f2]).astype(int)
-        
-        
-        for col_name, values in new_columns.items():
-            df[col_name] = values
+        # Extreme BMI (очень низкий/высокий)
+        df['obese'] = (df['bmi'] >= 30).astype(int)
+        df['underweight'] = (df['bmi'] <= 18.5).astype(int)
+        df['extreme_bmi'] = ((df['bmi'] < 18.5) | (df['bmi'] > 35)).astype(int)
+
+        # Пожилые с детьми
+        df['elderly_with_children'] = ((df['age'] > 50) & (df['children'] > 0)).astype(int)
+
+        # Молодые курильщики
+        df['young_smoker'] = ((df['age'] < 30) & (df['smoker'] == 1)).astype(int)
 
         
         return df
